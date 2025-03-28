@@ -16,11 +16,19 @@ TIPOS_APORTE = ["Confío", "Rosario", "Eucaristía", "Visita al Santuario", "Otr
 MIEMBROS = ["Padre Juan", "Padre Pablo", "David", "Teodoro"]
 META = 2000
 
+# Valores ponderados por tipo de contribución
+PESOS_APORTE = {
+    "Confío": 1,
+    "Rosario": 3,
+    "Eucaristía": 5,
+    "Visita al Santuario": 3,
+    "Otros": 1
+}
+
 # ---------- Autenticación con Google desde secrets ----------
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 google_credentials = st.secrets["google"]
 
-# Convertir secrets en dict para usar como credenciales
 creds_dict = {
     "type": google_credentials["type"],
     "project_id": google_credentials["project_id"],
@@ -43,12 +51,14 @@ df = get_as_dataframe(sheet).dropna(how="all")
 if df.empty:
     df = pd.DataFrame(columns=["Nombre", "Tipo", "FechaHora"])
 
-total_general = len(df)
+# Calcular total ponderado
+df["Valor"] = df["Tipo"].map(PESOS_APORTE)
+total_general = df["Valor"].sum()
 
 # ---------- UI PRINCIPAL ----------
 st.title("Capitalario Misiones Colombia")
 st.write("Capitalario de Gracias para seguir anhelando y conquistando este proyecto de fundar la juventud de Schoenstatt Colombia junto a la Mater")
-st.subheader("Meta: 2000 contribuciones")
+st.subheader(f"Meta: {META} puntos de contribución")
 
 # ---------- Formulario ----------
 st.subheader("➕ Agregar nueva contribución")
@@ -64,12 +74,12 @@ with st.form("form_ofrecimiento"):
             "FechaHora": [datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
         })
         df = pd.concat([df, nueva_fila], ignore_index=True)
-        set_with_dataframe(sheet, df)
-        st.success(f"¡Gracias {nombre} por ofrecer un(a) {tipo}!")
+        set_with_dataframe(sheet, df.drop(columns=["Valor"]))  # Guardamos sin la columna calculada
+        st.success(f"¡Gracias {nombre} por ofrecer un(a) {tipo}! 🙏")
         st.rerun()
 
 # ---------- Progreso general ----------
-st.metric(label="Total acumulado", value=total_general)
+st.metric(label="Total acumulado (ponderado)", value=int(total_general))
 progreso = min(total_general / META, 1.0) * 100
 
 st.markdown(f"""
@@ -89,7 +99,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ---------- Gráficos ----------
-conteo_tipos = df["Tipo"].value_counts().reindex(TIPOS_APORTE, fill_value=0)
+conteo_tipos = df.groupby("Tipo")["Valor"].sum().reindex(TIPOS_APORTE, fill_value=0)
 faltantes = max(META - conteo_tipos.sum(), 0)
 conteo_completo = conteo_tipos.copy()
 conteo_completo["Faltantes"] = faltantes
@@ -114,20 +124,20 @@ with col1:
         }
     )
     fig_dona.update_traces(textinfo="percent", pull=[0.01]*len(conteo_completo))
-    fig_dona.update_layout(showlegend=True, title=f"{conteo_tipos.sum()} de {META} contribuciones")
+    fig_dona.update_layout(showlegend=True, title=f"{int(conteo_tipos.sum())} de {META} puntos")
     st.plotly_chart(fig_dona, use_container_width=True)
 
-# Barras por persona
+# Barras por persona (ponderado)
 with col2:
     st.markdown("<h2 style='font-size:25px; color:#333;'>Contribuciones por persona</h2>", unsafe_allow_html=True)
-    df_conteo = df.groupby(["Nombre", "Tipo"]).size().reset_index(name="Cantidad")
+    df_conteo = df.groupby(["Nombre", "Tipo"])["Valor"].sum().reset_index()
     fig_bar = px.bar(
         df_conteo,
         x="Nombre",
-        y="Cantidad",
+        y="Valor",
         color="Tipo",
-        title="Total por persona y tipo de oración",
-        text="Cantidad",
+        title="Total por persona y tipo de oración (ponderado)",
+        text="Valor",
         color_discrete_map={
             "Confío": "#219ebc",
             "Rosario": "#023047",
@@ -139,7 +149,7 @@ with col2:
     fig_bar.update_layout(
         barmode="stack",
         xaxis_title="Persona",
-        yaxis_title="Contribuciones",
+        yaxis_title="Puntos",
         legend_title="Tipo de oración"
     )
     st.plotly_chart(fig_bar, use_container_width=True)
