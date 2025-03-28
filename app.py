@@ -130,14 +130,14 @@ with col1:
 # Barras por persona (ponderado)
 with col2:
     st.markdown("<h2 style='font-size:25px; color:#333;'>Contribuciones por persona</h2>", unsafe_allow_html=True)
-    df_conteo = df.groupby(["Nombre", "Tipo"])["Valor"].sum().reset_index()
+    df_conteo = df.groupby(["Nombre", "Tipo"]).size().reset_index(name="Cantidad")
     fig_bar = px.bar(
         df_conteo,
         x="Nombre",
-        y="Valor",
+        y="Cantidad",
         color="Tipo",
         title="Total por persona y tipo de oración (ponderado)",
-        text="Valor",
+        text="Cantidad",
         color_discrete_map={
             "Confío": "#219ebc",
             "Rosario": "#023047",
