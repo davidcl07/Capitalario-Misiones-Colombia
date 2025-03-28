@@ -19,7 +19,7 @@ META = 2000
 # Valores ponderados por tipo de contribución
 PESOS_APORTE = {
     "Confío": 1,
-    "Rosario": 3,
+    "Rosario": 5,
     "Eucaristía": 5,
     "Visita al Santuario": 3,
     "Otros": 1
