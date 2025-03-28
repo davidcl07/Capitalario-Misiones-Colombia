@@ -136,7 +136,7 @@ with col2:
         x="Nombre",
         y="Cantidad",
         color="Tipo",
-        title="Total por persona y tipo de oración (ponderado)",
+        title="Total por persona y tipo de oración",
         text="Cantidad",
         color_discrete_map={
             "Confío": "#219ebc",
