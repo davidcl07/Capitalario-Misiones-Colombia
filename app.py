@@ -11,10 +11,10 @@ import json
 st.set_page_config(page_title="Capitalario Misiones Colombia", layout="centered")
 
 # Constantes
-GOOGLE_SHEET_NAME = "capitalario_misiones_colombia"
+GOOGLE_SHEET_NAME = "Capitalario"
 TIPOS_APORTE = ["Confío", "Rosario", "Eucaristía", "Visita al Santuario", "Otros"]
 MIEMBROS = ["Padre Juan", "Padre Pablo", "David", "Teodoro"]
-META = 50
+META = 2000
 
 # ---------- Autenticación con Google desde secrets ----------
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
