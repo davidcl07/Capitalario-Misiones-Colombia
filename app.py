@@ -11,7 +11,7 @@ st.set_page_config(page_title="Capitalario Misiones Colombia", layout="centered"
 CSV_FILE = "capitalario_colombia.csv"
 TIPOS_APORTE = ["Confío", "Rosario", "Eucaristía", "Visita al Santuario", "Otros"]
 MIEMBROS = ["Padre Juan", "Padre Pablo", "David", "Teodoro"]
-META = 50
+META = 2000
 
 # Crear archivo si no existe
 if not os.path.exists(CSV_FILE):
